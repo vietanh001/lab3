@@ -1,0 +1,44 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: statefulset
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: nginx
+  template:
+    metadata:
+      labels:
+        app: nginx
+    spec:
+      containers:
+      - name: nginx0
+        image: 192.168.42.162:5000/nginx:latest
+        ports:
+        - containerPort: 80
+        volumeMounts:
+        - name: nginx-log0
+          mountPath: /var/log/nginx
+      - name: nginx1
+        image: 192.168.42.162:5000/nginx:latest
+        ports:
+        - containerPort: 81
+        volumeMounts:
+        - name: nginx-log1
+          mountPath: /var/log/nginx
+        - name: nginx-config-port
+          mountPath: /etc/nginx/conf.d
+      volumes:
+      - name: nginx-log0
+        persistentVolumeClaim:
+          claimName: pvc0
+      - name: nginx-log1
+        persistentVolumeClaim:
+          claimName: pvc1
+      - name: nginx-config-port
+        configMap:
+          name: nginx-config
+          items:
+          - key: nginx.conf
+            path: nginx.conf
